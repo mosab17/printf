@@ -8,11 +8,11 @@
 #define BUFF_SIZE 1024
 
 
-#defineFl_MINUS 1
-#defineFl_PLUS 2
-#defineFl_ZERO 4
-#defineFl_HASH 8
-#defineFl_SPACE 16
+#define Fl_MINUS 1
+#define Fl_PLUS 2
+#define Fl_ZERO 4
+#define Fl_HASH 8
+#define Fl_SPACE 16
 
 #define S_LONG 2
 #define S_SHORT 1

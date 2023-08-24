@@ -1,188 +1,141 @@
 #include "main.h"
 
-/************************* PRINT CHAR *************************/
+/*********************** OUTPUT CHARACTER ***********************/
 
-/**
- * print_char - Prints a char
- * @types: List a of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: Width
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Number of chars printed
- */
-int print_char(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
+int outputChar(va_list arguments, char tempBuffer[], int flagSet, int charSpan, int precisionSet, int typeLength)
 {
-	char c = va_arg(types, int);
-
-	return (handle_write_char(c, buffer, flags, width, precision, size));
+	char singleChar = va_arg(arguments, int);
+	return (processCharOutput(singleChar, tempBuffer, flagSet, charSpan, precisionSet, typeLength));
 }
-/************************* PRINT A STRING *************************/
-/**
- * print_string - Prints a string
- * @types: List a of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: get width.
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Number of chars printed
- */
-int print_string(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
-{
-	int length = 0, i;
-	char *str = va_arg(types, char *);
 
-	UNUSED(buffer);
-	UNUSED(flags);
-	UNUSED(width);
-	UNUSED(precision);
-	UNUSED(size);
-	if (str == NULL)
+/*********************** OUTPUT STRING ***********************/
+
+int outputString(va_list arguments, char tempBuffer[], int flagSet, int strSpan, int precisionSet, int typeLength)
+{
+	int strLen = 0, idx;
+	char *inputStr = va_arg(arguments, char *);
+
+	UNUSED(tempBuffer);
+	UNUSED(flagSet);
+	UNUSED(strSpan);
+	UNUSED(precisionSet);
+	UNUSED(typeLength);
+	
+	if (!inputStr)
 	{
-		str = "(null)";
-		if (precision >= 6)
-			str = "      ";
+		inputStr = "(null)";
+		if (precisionSet >= 6)
+			inputStr = "      ";
 	}
 
-	while (str[length] != '\0')
-		length++;
+	while (inputStr[strLen] != '\0')
+		strLen++;
 
-	if (precision >= 0 && precision < length)
-		length = precision;
+	if (precisionSet >= 0 && precisionSet < strLen)
+		strLen = precisionSet;
 
-	if (width > length)
+	if (strSpan > strLen)
 	{
-		if (flags & F_MINUS)
+		if (flagSet & F_MINUS)
 		{
-			write(1, &str[0], length);
-			for (i = width - length; i > 0; i--)
+			write(1, inputStr, strLen);
+			for (idx = strSpan - strLen; idx > 0; idx--)
 				write(1, " ", 1);
-			return (width);
+			return (strSpan);
 		}
 		else
 		{
-			for (i = width - length; i > 0; i--)
+			for (idx = strSpan - strLen; idx > 0; idx--)
 				write(1, " ", 1);
-			write(1, &str[0], length);
-			return (width);
+			write(1, inputStr, strLen);
+			return (strSpan);
 		}
 	}
-
-	return (write(1, str, length));
+	return (write(1, inputStr, strLen));
 }
-/************************* PRINT PERCENT SIGN *************************/
-/**
- * print_percent - Prints a percent sign
- * @types: Lista of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: get width.
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Number of chars printed
- */
-int print_percent(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
+
+/*********************** OUTPUT PERCENT SYMBOL ***********************/
+
+int outputPercentSymbol(va_list arguments, char tempBuffer[], int flagSet, int charSpan, int precisionSet, int typeLength)
 {
-	UNUSED(types);
-	UNUSED(buffer);
-	UNUSED(flags);
-	UNUSED(width);
-	UNUSED(precision);
-	UNUSED(size);
+	UNUSED(arguments);
+	UNUSED(tempBuffer);
+	UNUSED(flagSet);
+	UNUSED(charSpan);
+	UNUSED(precisionSet);
+	UNUSED(typeLength);
+	
 	return (write(1, "%%", 1));
 }
 
-/************************* PRINT INT *************************/
-/**
- * print_int - Print int
- * @types: Lista of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: get width.
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Number of chars printed
- */
-int print_int(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
+/*********************** OUTPUT INTEGER ***********************/
+
+int outputInteger(va_list arguments, char tempBuffer[], int flagSet, int numberSpan, int precisionSet, int typeLength)
 {
-	int i = BUFF_SIZE - 2;
-	int is_negative = 0;
-	long int n = va_arg(types, long int);
-	unsigned long int num;
+	int pos = BUFF_SIZE - 2;
+	int isNegFlag = 0;
+	long int digit = va_arg(arguments, long int);
+	unsigned long int absValue;
 
-	n = convert_size_number(n, size);
+	digit = adjustSize(digit, typeLength);
 
-	if (n == 0)
-		buffer[i--] = '0';
+	if (digit == 0)
+		tempBuffer[pos--] = '0';
 
-	buffer[BUFF_SIZE - 1] = '\0';
-	num = (unsigned long int)n;
+	tempBuffer[BUFF_SIZE - 1] = '\0';
+	absValue = (unsigned long int)digit;
 
-	if (n < 0)
+	if (digit < 0)
 	{
-		num = (unsigned long int)((-1) * n);
-		is_negative = 1;
+		absValue = (unsigned long int)(digit * (-1));
+		isNegFlag = 1;
 	}
 
-	while (num > 0)
+	while (absValue > 0)
 	{
-		buffer[i--] = (num % 10) + '0';
-		num /= 10;
+		tempBuffer[pos--] = (absValue % 10) + '0';
+		absValue /= 10;
 	}
 
-	i++;
+	pos++;
 
-	return (write_number(is_negative, i, buffer, flags, width, precision, size));
+	return (processIntOutput(isNegFlag, pos, tempBuffer, flagSet, numberSpan, precisionSet, typeLength));
 }
 
-/************************* PRINT BINARY *************************/
-/**
- * print_binary - Prints an unsigned number
- * @types: Lista of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: get width.
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Numbers of char printed.
- */
-int print_binary(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
+/*********************** OUTPUT BINARY REPRESENTATION ***********************/
+
+int outputBinaryRep(va_list arguments, char tempBuffer[], int flagSet, int numberSpan, int precisionSet, int typeLength)
 {
-	unsigned int n, m, i, sum;
-	unsigned int a[32];
-	int count;
+	unsigned int value, bitMask, itr, aggregate;
+	unsigned int binaryArr[32];
+	int charCount;
 
-	UNUSED(buffer);
-	UNUSED(flags);
-	UNUSED(width);
-	UNUSED(precision);
-	UNUSED(size);
+	UNUSED(tempBuffer);
+	UNUSED(flagSet);
+	UNUSED(numberSpan);
+	UNUSED(precisionSet);
+	UNUSED(typeLength);
 
-	n = va_arg(types, unsigned int);
-	m = 2147483648; /* (2 ^ 31) */
-	a[0] = n / m;
-	for (i = 1; i < 32; i++)
+	value = va_arg(arguments, unsigned int);
+	bitMask = 2147483648; // 2^31
+	binaryArr[0] = value / bitMask;
+
+	for (itr = 1; itr < 32; itr++)
 	{
-		m /= 2;
-		a[i] = (n / m) % 2;
+		bitMask /= 2;
+		binaryArr[itr] = (value / bitMask) % 2;
 	}
-	for (i = 0, sum = 0, count = 0; i < 32; i++)
-	{
-		sum += a[i];
-		if (sum || i == 31)
-		{
-			char z = '0' + a[i];
 
-			write(1, &z, 1);
-			count++;
+	for (itr = 0, aggregate = 0, charCount = 0; itr < 32; itr++)
+	{
+		aggregate += binaryArr[itr];
+		if (aggregate || itr == 31)
+		{
+			char digit = '0' + binaryArr[itr];
+			write(1, &digit, 1);
+			charCount++;
 		}
 	}
-	return (count);
+	return (charCount);
 }
+

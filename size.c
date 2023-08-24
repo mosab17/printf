@@ -1,26 +1,27 @@
 #include "main.h"
 
 /**
- * get_size - Calculates the size to cast the argument
- * @format: Formatted string in which to print the arguments
- * @i: List of arguments to be printed.
+ * determine_argument_size - Calculates the size to cast the argument
+ * @format_str: Formatted string in which to determine the argument size.
+ * @current_idx: Current index pointer in the format_str.
  *
- * Return: Precision.
+ * Return: Size specifier.
  */
-int get_size(const char *format, int *i)
+int determine_argument_size(const char *format_str, int *current_idx)
 {
-	int curr_i = *i + 1;
-	int size = 0;
+    int temp_idx = *current_idx + 1;
+    int cast_size = 0;
 
-	if (format[curr_i] == 'l')
-		size = S_LONG;
-	else if (format[curr_i] == 'h')
-		size = S_SHORT;
+    if (format_str[temp_idx] == 'l')
+        cast_size = S_LONG;
+    else if (format_str[temp_idx] == 'h')
+        cast_size = S_SHORT;
 
-	if (size == 0)
-		*i = curr_i - 1;
-	else
-		*i = curr_i;
+    if (cast_size == 0)
+        *current_idx = temp_idx - 1;
+    else
+        *current_idx = temp_idx;
 
-	return (size);
+    return (cast_size);
 }
+

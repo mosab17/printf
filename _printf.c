@@ -1,64 +1,65 @@
 #include "main.h"
 
-void buffer_print(char buf[], int *idx);
+void flushBuffer(char buf[], int *bufIndex);
 
 /**
- * _printf - Our custom printf function
- * @format: The format string
- * ...
- * Return: Number of characters printed
+ * _printf - Printf function
+ * @format: format.
+ * Return: Printed chars.
  */
 int _printf(const char *format, ...)
 {
-    int i, chars_printed = 0, buffer_idx = 0;
-    int fl, wid, prec, sz, tmp_printed;
-    va_list args;
-    char buf[BUFF_SIZE];
+	int idx, charsThisLoop = 0, totalCharsPrinted = 0;
+	int fmtFlags, fmtWidth, fmtPrecision, fmtSize, bufIndex = 0;
+	va_list argList;
+	char buf[BUFF_SIZE];
 
-    if (!format)
-        return (-1);
+	if (format == NULL)
+		return (-1);
 
-    va_start(args, format);
+	va_start(argList, format);
 
-    for (i = 0; format[i]; i++)
-    {
-        if (format[i] != '%')
-        {
-            buf[buffer_idx++] = format[i];
-            if (buffer_idx == BUFF_SIZE)
-                buffer_print(buf, &buffer_idx);
-            chars_printed++;
-        }
-        else
-        {
-            buffer_print(buf, &buffer_idx);
-            fl = fetch_flags(format, &i);
-            wid = fetch_width(format, &i, args);
-            prec = fetch_precision(format, &i, args);
-            sz = fetch_size(format, &i);
-            i++;
-            tmp_printed = print_arg(format, &i, args, buf, fl, wid, prec, sz);
-            if (tmp_printed == -1)
-                return (-1);
-            chars_printed += tmp_printed;
-        }
-    }
-    buffer_print(buf, &buffer_idx);
-    va_end(args);
-    return (chars_printed);
+	for (idx = 0; format && format[idx] != '\0'; idx++)
+	{
+		if (format[idx] != '%')
+		{
+			buf[bufIndex++] = format[idx];
+			if (bufIndex == BUFF_SIZE)
+				flushBuffer(buf, &bufIndex);
+			totalCharsPrinted++;
+		}
+		else
+		{
+			flushBuffer(buf, &bufIndex);
+			fmtFlags = get_flags(format, &idx);
+			fmtWidth = get_width(format, &idx, argList);
+			fmtPrecision = get_precision(format, &idx, argList);
+			fmtSize = get_size(format, &idx);
+			++idx;
+			charsThisLoop = handle_print(format, &idx, argList, buf,
+				fmtFlags, fmtWidth, fmtPrecision, fmtSize);
+			if (charsThisLoop == -1)
+				return (-1);
+			totalCharsPrinted += charsThisLoop;
+		}
+	}
+
+	flushBuffer(buf, &bufIndex);
+
+	va_end(argList);
+
+	return (totalCharsPrinted);
 }
 
 /**
- * buffer_print - Print buffer content if it's not empty
- * @buf: Buffer
- * @idx: Current buffer index
+ * flushBuffer - Prints the contents of the buffer if it exist
+ * @buf: Array of chars
+ * @bufIndex: Index at which to add next char, represents the length.
  */
-void buffer_print(char buf[], int *idx)
+void flushBuffer(char buf[], int *bufIndex)
 {
-    if (*idx > 0)
-    {
-        write(1, buf, *idx);
-        *idx = 0;
-    }
-}
+	if (*bufIndex > 0)
+		write(1, buf, *bufIndex);
 
+	*bufIndex = 0;
+}

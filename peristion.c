@@ -1,41 +1,42 @@
 #include "main.h"
 
 /**
- * get_precision - Calculates the precision for printing
- * @format: Formatted string in which to print the arguments
- * @i: List of arguments to be printed.
- * @list: list of arguments.
+ * get_precision_value - Calculates the precision for printing
+ * @formatted_string: Formatted string in which to print the arguments
+ * @format_index: Pointer to current index in formatted string.
+ * @args_list: List of arguments.
  *
- * Return: Precision.
+ * Return: Precision value.
  */
-int get_precision(const char *format, int *i, va_list list)
+int get_precision_value(const char *formatted_string, int *format_index, va_list args_list)
 {
-	int curr_i = *i + 1;
-	int precision = -1;
+	int current_index = *format_index + 1;
+	int calculated_precision = -1;
 
-	if (format[curr_i] != '.')
-		return (precision);
+	if (formatted_string[current_index] != '.')
+		return (calculated_precision);
 
-	precision = 0;
+	calculated_precision = 0;
 
-	for (curr_i += 1; format[curr_i] != '\0'; curr_i++)
+	for (current_index += 1; formatted_string[current_index] != '\0'; current_index++)
 	{
-		if (is_digit(format[curr_i]))
+		if (is_digit(formatted_string[current_index]))
 		{
-			precision *= 10;
-			precision += format[curr_i] - '0';
+			calculated_precision *= 10;
+			calculated_precision += formatted_string[current_index] - '0';
 		}
-		else if (format[curr_i] == '*')
+		else if (formatted_string[current_index] == '*')
 		{
-			curr_i++;
-			precision = va_arg(list, int);
+			current_index++;
+			calculated_precision = va_arg(args_list, int);
 			break;
 		}
 		else
 			break;
 	}
 
-	*i = curr_i - 1;
+	*format_index = current_index - 1;
 
-	return (precision);
+	return (calculated_precision);
 }
+
